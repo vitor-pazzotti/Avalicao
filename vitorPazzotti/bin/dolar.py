@@ -1,21 +1,17 @@
-#!/usr/bin/env python3.7
-
 import requests
 from datetime import datetime
 import csv
 import os
 import time
 
-# função para localizar e extrair o titulo da moeda 
-cwd = os.getcwd()
+path = os.getcwd()
+
 def moeda(html):
-	"""paramatro: html -> conteúdo da páginareturn: conteduo -> tipo de moeda"""
 	#verifica o titulo da moeda
 	aux = html.find("instrumentH1inlineblock") + 30
 	#coloca o titulo em um formato sem espaços
 	tipo_moeda = html[aux:aux+31]
 
-	#retorna o bloco de código como tipo_moeda
 	return tipo_moeda
 
 def cotacao(html):
@@ -24,7 +20,6 @@ def cotacao(html):
 	#retira os espacos do valor obtido
 	cot = html[aux:aux+29].strip()
 
-#retorno da função cotacao
 	return cot
 
 def mudanca(html):
@@ -33,7 +28,7 @@ def mudanca(html):
 	#retira os espaços da variavel
 	mud = html[aux:aux+20].strip()
 
-	return mud
+	return mud;
 
 def percentual(html):
 	#localiza percentual
@@ -43,38 +38,34 @@ def percentual(html):
 
 	return perc
 
-def data(r):
-	#localiza a data e retira GMT
-	aux = r.headers["date"][:-4]
-	#formatação da data para atender o exercicio
-	date = datetime.strptime(aux, '%a, %d %b %Y %H:%M:%S').strftime('%Y-%m-%d %H:%M:%S')
+def timestamp(r):
+    now = datetime.now()
+    time = datetime.timestamp(now)
 
-	return date
+    return time
 
 def gravar(saida):
-	#abertura do arquivo com append
-        #Mudei a abertura do arquivo para um context manager.
-	h = time.time()
-	with open( cwd + f'/vitorPazzotti/crawler_dolar/dolar_{h}.csv', 'a+') as f:
-            writer = csv.writer(f, delimiter = ',')
-	#verifica se o arquivo está vazio, e se estiver, escreve o cabeçalho.
-	if os.stat(cwd + f'/vitorPazzotti/crawler_dolar/dolar_{h}.csv').st_size == 0:
-		writer.writerow(['Currency', 'Value', 'Change', 'Percentual', 'Timestamp'])
+    now = datetime.now()
+    
+    time = datetime.date(now)
+    #abertura do arquivo com append
+    arq = csv.writer(open(path + '/crawler_dolar/dolar_{}.csv'.format(time), '+a'), delimiter = ',')
+	#escrita da linha
+    if os.stat(path + '/crawler_dolar/dolar_{}.csv'.format(time)).st_size == 0:
+        arq.writerow(['currency', 'value', 'change', 'perc', 'timestamp'])
 
-	writer.writerow(saida)
+    arq.writerow(saida)
 
-if __name__ == '__main__':
-    # Mudança para capturar 20 vezes a mesma moeda.
-    for i in range(20):
-	# estabelece conexão com a url
-        r = requests.get(url="https://m.investing.com/currencies/usd-brl", headers={'User-Agent':'curl/7.52.1'})
+def main():
+	r = requests.get(url="https://m.investing.com/currencies/usd-brl", headers={'User-Agent':'curl/7.52.1'})
 	#r.text -> html todo
-        html = r.text
+	html = r.text
 	#armazena as variaveis em uma linha
-        saida = [moeda(html), cotacao(html), mudanca(html),
-		percentual(html), data(r)]
+	saida = [moeda(html), cotacao(html), mudanca(html), percentual(html), timestamp(r)]
 
 	#chamada do metodo para armazenar no arquivo
-        gravar(saida)
-        
+	gravar(saida)
 
+#if '__name__' == __main__:
+
+main()
