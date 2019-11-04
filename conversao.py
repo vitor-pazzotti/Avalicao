@@ -22,7 +22,6 @@ dol = df2.to_csv(path +'/vitorAvaliacao/Avalicao/dol.csv')
 
 #Crypto
 all_files = glob.iglob(path + '/vitorAvaliacao/Avalicao/vitorPazzotti/crawler_crypto/*.csv')
-
 print(all_files)
 
 li = []
